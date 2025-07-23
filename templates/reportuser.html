@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+    <title>Industrial Control Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+         * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --primary-dark: #3f37c9;
+            --success: #00c853;
+            --warning: #f8961e;
+            --danger: #ff3d00;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --gray-light: #e9ecef;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --hover-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --sidebar-width: 240px;
+        }
+
+        body {
+            display: flex;
+            background-color: #f5f7fb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            color: var(--dark);
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary-dark) 0%, var(--primary) 100%);
+            color: white;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar h2 {
+            text-align: left;
+            margin: 20px 0 30px 25px;
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sidebar h2 i {
+            margin-right: 10px;
+            font-size: 28px;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left: 4px solid white;
+        }
+        
+        .sidebar a i {
+            margin-right: 12px;
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+        .content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .content h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: #333;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eaeaea;
+        }
+
+        .control-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .control-section {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .main-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .control-button {
+            display: flex;
+            align-items: center;
+            background-color: var(--gray-light);
+            border-radius: 50px;
+            padding: 10px 20px;
+            position: relative;
+        }
+
+        .control-button h2 {
+            font-size: 24px;
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .toggle {
+            width: 80px;
+            height: 40px;
+            border-radius: 50px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .start-toggle {
+            background-color: var(--danger);
+        }
+
+        .stop-toggle {
+            background-color: var(--success);
+        }
+
+        .sensor-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            background-color: rgba(220, 255, 220, 0.3);
+            padding: 20px;
+            border-radius: var(--border-radius);
+        }
+
+        .sensor {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sensor-indicator {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-bottom: 5px;
+        }
+
+        .sensor-on {
+            background-color: var(--success);
+        }
+
+        .sensor-off {
+            background-color: var(--danger);
+        }
+
+        .sensor-label {
+            background-color: rgba(200, 200, 255, 0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .parameter-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .parameter-input {
+            display: flex;
+            align-items: center;
+            background-color: rgba(220, 255, 245, 0.5);
+            border-radius: 50px;
+            padding: 10px 20px;
+            gap: 10px;
+        }
+
+        .parameter-input h2 {
+            font-size: 20px;
+            font-weight: 500;
+            width: 100px;
+        }
+
+        .parameter-input input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            font-size: 16px;
+        }
+
+        .parameter-input input:focus {
+            border-color: var(--primary);
+        }
+
+        .parameter-input button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .parameter-input button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .stats-display {
+            background-color: rgba(255, 250, 220, 0.5);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-row {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-weight: 500;
+            width: 180px;
+        }
+
+        .stat-value {
+            flex: 1;
+            padding: 5px 10px;
+            background-color: rgba(255, 255, 200, 0.5);
+            border-radius: 5px;
+        }
+
+        .performance-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .oee-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin-bottom: 20px;
+        }
+
+        .oee-circle {
+            fill: none;
+            stroke: #e0e0e0;
+            stroke-width: 15;
+        }
+
+        .oee-indicatorreportuser {
+            fill: none;
+            stroke: var(--success);
+            stroke-width: 15;
+            stroke-linecap: round;
+            stroke-dasharray: 440;
+            transform: rotate(-90deg);
+            transform-origin: center;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .oee-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .oee-label {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .oee-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+            }
+            
+            .sidebar h2, .sidebar a span {
+                display: none;
+            }
+            
+            .sidebar a {
+                justify-content: center;
+                padding: 20px 0;
+            }
+            
+            .sidebar a i {
+                margin-right: 0;
+            }
+            
+            .content {
+                margin-left: 80px;
+            }
+            
+            .control-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2><i class="fas fa-university"  style="margin-right: 10px;"></i> Menu</h2>
+        <a href="{{ url_for('userlogin') }}" ><i class="fas fa-home" style="margin-right: 10px;font-size: 18px;margin-left: 2px;"></i> <span style="margin-left: 4px;">Dashboard</span></a>
+        <a href="{{ url_for('controller') }}" style=" background-color: #f8961e;"><i class="fas fa-sliders"style="margin-right: 10px;font-size: 18px;margin-left: 2px;"></i> <span style="margin-left: 4px;">Controller</span></a>
+        <a href="{{ url_for('inventory') }}"><i class="fas fa-boxes"style="margin-right: 10px;font-size: 18px;margin-left: 2px;"></i> <span style="margin-left: 4px;">Inventory</span></a>
+        <a href="{{ url_for('digitaltwin') }}"><i class="fas fa-cogs" style="margin-right: 10px;font-size: 18px;margin-left: 2px;"></i> <span style="margin-left: 4px;">Digital Twin</span></a>
+        <a href="{{ url_for('erp') }}"><i class="fas fa-sign-out-alt" style="margin-right: 10px;font-size: 18px;margin-left: 2px;"></i> <span style="margin-left: 4px;">Logout</span></a>
+    </div>
+
+
+    <div class="content">
+        <h1>Live Control</h1>
+        
+        <div class="control-panel">
+            <div class="control-section">
+                <div class="main-controls" style="margin-bottom: 10px;">
+                    <div class="control-button">
+                        <label>System Status: </label><span id="systemstatuscontrol" style="margin-left: 5px; color: red;"> Offline</span>
+                        <label style="margin-left: 10px;">System State: </label><span id="systemstatecontrol" style="margin-left: 5px; color: red;"> OFF</span>
+                    </div>
+                    <div class="control-button">
+                        <h2>Start</h2>
+                        <button class="toggle start-toggle" id="startbuttonreportuser" onclick="TurnOnSystem()"></button>
+                    </div>
+                    
+                    <div class="control-button">
+                        <h2>Stop</h2>
+                        <button class="toggle stop-toggle" id="stopbuttonreportuser"  onclick="TurnOffSystem()"></button>
+                    </div>
+                    
+                </div>
+                
+                <div class="sensor-grid">
+                    <div class="sensor">
+                        <div class="sensor-indicator sensor-on" id="sensor1-indicator"></div>
+                        <div class="sensor-label">Sensor 1</div>
+                    </div>
+                    <div class="sensor">
+                        <div class="sensor-indicator sensor-on" id="sensor2-indicator"></div>
+                        <div class="sensor-label">Sensor 2</div>
+                    </div>
+                    <div class="sensor">
+                        <div class="sensor-indicator sensor-off" id="sensor3-indicator"></div>
+                        <div class="sensor-label">Sensor 3</div>
+                    </div>
+                    <div class="sensor">
+                        <div class="sensor-indicator sensor-off" id="sensor4-indicator"></div>
+                        <div class="sensor-label">Sensor 4</div>
+                    </div>
+                    <div class="sensor">
+                        <div class="sensor-indicator sensor-on" id="sensor5-indicator"></div>
+                        <div class="sensor-label">Sensor 5</div>
+                    </div>
+                    <div class="sensor">
+                        <div class="sensor-indicator sensor-on" id="sensor6-indicator"></div>
+                        <div class="sensor-label">Sensor 6</div>
+                    </div>
+                    <div class="sensor">
+                        <div class="sensor-indicator sensor-off" id="sensor7-indicator"></div>
+                        <div class="sensor-label">Sensor 7</div>
+                    </div>
+                    <div class="sensor">
+                        <div class="sensor-indicator sensor-off" id="sensor8-indicator"></div>
+                        <div class="sensor-label">Sensor 8</div>
+                    </div>
+                    <div class="sensor">
+                        <div class="sensor-indicator sensor-on" id="sensor9-indicator"></div>
+                        <div class="sensor-label">Sensor 9</div>
+                    </div>
+                    <div class="sensor">
+                        <div class="sensor-indicator sensor-on" id="sensor10-indicator"></div>
+                        <div class="sensor-label">Sensor X</div>
+                    </div>
+                </div>
+                
+                <div class="parameter-controls">
+                    <div class="parameter-input">
+                        <h2>Speed</h2>
+                        <input type="number" id="speed-inputreportuser" min="0" max="100" placeholder="Enter Speed">
+                        <button id="speed-set-button">Set</button>
+                    </div>
+                    
+                    <div class="parameter-input">
+                        <h2>Duration</h2>
+                        <input type="number" id="duration-inputreportuser" min="0" placeholder="Enter time">
+                        <button id="duration-set-button">Set</button>
+                    </div>
+                </div>
+                
+                <div class="stats-display">
+                    <div class="stat-row">
+                        <div class="stat-label">Current speed</div>
+                        <div class="stat-value" id="current-speed-value">0</div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label">Total Duration</div>
+                        <div class="stat-value" id="total-duration-value">0</div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label">Current Duration</div>
+                        <div class="stat-value" id="current-duration-value">0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <div class="performance-section">
+                    <div class="oee-container">
+                        <svg width="200" height="200" viewBox="0 0 160 160">
+                            <circle class="oee-circle" cx="80" cy="80" r="70"></circle>
+                            <circle class="oee-indicatorreportuser" cx="80" cy="80" r="70" style="stroke-dashoffset: 88"></circle>
+                        </svg>
+                        <div class="oee-text">
+                            <div class="oee-label">OEE</div>
+                            <div class="oee-value" id="oee-valuereportuser">80%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="additional-metrics">
+                        <div class="stat-row">
+                            <div class="stat-label">Availability</div>
+                            <div class="stat-value" id="availability-value">95%</div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-label">Performance</div>
+                            <div class="stat-value" id="performance-value">92%</div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-label">Quality</div>
+                            <div class="stat-value" id="quality-value">97%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='scripter1.js') }}"></script>
+</body>
+</html>

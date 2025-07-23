@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+    <title>Manufacturing Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --primary-dark: #3f37c9;
+            --success: #00c853;
+            --warning: #f8961e;
+            --danger: #ff3d00;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --gray-light: #e9ecef;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --hover-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --sidebar-width: 240px;
+        }
+
+        body {
+            display: flex;
+            background-color: #f5f7fb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            color: var(--dark);
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary-dark) 0%, var(--primary) 100%);
+            color: white;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar h2 {
+            text-align: left;
+            margin: 20px 0 30px 25px;
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sidebar h2 i {
+            margin-right: 10px;
+            font-size: 28px;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border-left: 4px solid transparent;
+        }
+        .sidebar a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left: 4px solid white;
+        }
+
+
+        
+        .sidebar a i {
+            margin-right: 12px;
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+ 
+        button {
+            padding: 10px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            background: var(--primary-light);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            transform: translateY(-1px);
+        }
+        
+        .content {
+            margin-left: var(--sidebar-width);
+            padding: 30px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .dashboard-header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .card {
+            background: white;
+            box-shadow: var(--shadow);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--hover-shadow);
+            transform: translateY(-3px);
+        }
+
+        .card h1 {
+            font-size: 22px;
+            margin-bottom: 20px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+        }
+        
+        .card h1::before {
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            margin-right: 12px;
+            font-size: 22px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .order-card h1::before {
+            content: "\f07a"; /* Shopping cart icon */
+            background-color: var(--primary);
+        }
+        
+        .status-card h1::before {
+            content: "\f201"; /* Chart icon */
+            background-color: var(--success);
+        }
+        
+        .oee-card h1::before {
+            content: "\f201"; /* Chart icon */
+            background-color: var(--warning);
+        }
+
+
+        .product-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .labelProd {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--dark);
+            min-width: 100px;
+            display: inline-block;
+        }
+
+        .inputProdOrder {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 14px;
+            width: 100px;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .inputProdOrder:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .status-indicator {
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 500;
+            background-color: #f8f9fa;
+            color: var(--gray);
+            margin: 0 12px;
+            white-space: nowrap;
+        }
+        
+        .quantity-indicator {
+            font-weight: 600;
+            color: var(--primary);
+            margin-left: 10px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .divider {
+            border: none;
+            height: 1px;
+            background-color: #e9ecef;
+            margin: 20px 0;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: 120px 1fr 1fr 1fr;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .status-label {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--dark);
+        }
+        
+        .status-value {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 14px;
+        }
+
+        .oee-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .oee-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .oee-input-group label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .oee-value {
+            padding: 10px;
+            border: 1px solid #51ca00;
+            border-radius: 8px;
+            background-color: rgba(81, 202, 0, 0.05);
+            font-size: 15px;
+            font-weight: 500;
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .oee-result {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .oee-result h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+        
+        .oee-result span {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+                overflow: hidden;
+            }
+            
+            .sidebar h2, .sidebar a span {
+                display: none;
+            }
+            
+            .sidebar a {
+                justify-content: center;
+                padding: 20px 0;
+            }
+            
+            .sidebar a::before {
+                margin-right: 0;
+            }
+            
+            .content {
+                margin-left: 80px;
+            }
+            
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2><i class="fas fa-university"  style="margin-right: 10px;"></i> Menu</h2>
+        <a href="{{ url_for('userlogin') }}" style=" background-color: #f8961e;"><i class="fas fa-home" style="margin-right: 10px;font-size: 18px;margin-left: 2px;"></i> <span style="margin-left: 4px;">Dashboard</span></a>
+        <a href="{{ url_for('controller') }}" class="active"><i class="fas fa-sliders"style="margin-right: 10px;font-size: 18px;margin-left: 2px;"></i> <span style="margin-left: 4px;">Controller</span></a>
+        <a href="{{ url_for('inventory') }}"><i class="fas fa-boxes"style="margin-right: 10px;font-size: 18px;margin-left: 2px;"></i> <span style="margin-left: 4px;">Inventory</span></a>
+        <a href="{{ url_for('digitaltwin') }}"><i class="fas fa-cogs" style="margin-right: 10px;font-size: 18px;margin-left: 2px;"></i> <span style="margin-left: 4px;">Digital Twin</span></a>
+        <a href="{{ url_for('erp') }}"><i class="fas fa-sign-out-alt" style="margin-right: 10px;font-size: 18px;margin-left: 2px;"></i> <span style="margin-left: 4px;">Logout</span></a>
+
+    </div>
+
+    <div class="content">
+        <div class="dashboard-header">
+            <h1>Manufacturing Dashboard</h1>
+            <div>
+                <label>System Status: </label><span id="systemstatuscontrol" style="margin-left: 0px; color: red;"> Offline</span>
+                <label style="margin-left: 10px;">System State: </label><span id="systemstatecontrol" style="margin-left: 10px; color: red;"> OFF</span>
+            </div>
+        </div>
+    
+        <div class="card order-card">
+            <h1>Online Order</h1>
+            
+            <div class="product-row">
+                <label class="labelProd">Product A</label>
+                <input id="ProductAOrder" type="number" class="inputProdOrder">
+                <span id="ProductAOrderSpan" class="status-indicator">Order Not Placed</span>
+                <label class="labelProd">Product A left:</label>
+                <span id="Prod1Leftorder" class="quantity-indicator">(default)</span>
+            </div>
+            
+            <div class="product-row">
+                <label class="labelProd">Product B</label>
+                <input id="ProductBOrder" type="number" class="inputProdOrder">
+                <span id="ProductBOrderSpan" class="status-indicator">Order Not Placed</span>
+                <label class="labelProd">Product B left:</label>
+                <span id="Prod2Leftorder" class="quantity-indicator">(default)</span>
+            </div>
+            
+            <div class="product-row">
+                <label class="labelProd">Product C</label>
+                <input id="ProductCOrder" type="number" class="inputProdOrder">
+                <span id="ProductCOrderSpan" class="status-indicator">Order Not Placed</span>
+                <label class="labelProd">Product C left:</label>
+                <span id="Prod3Leftorder" class="quantity-indicator">(default)</span>
+            </div>
+            
+            <div class="action-buttons">
+                <button onclick="placeorderforproduct()" id="placeorderuserlogin" style="display: block;">
+                    <i class="fas fa-shopping-cart fa-fw"></i> Place Order
+                </button>
+                <label id="placedorderuserlogin" style="display: none;">
+                    <i class="fas fa-shopping-cart fa-fw"></i> Order Placed
+                </label>
+                <button  id="cancelorder" style="display: none; background-color: red;">
+                    <i class="fas fa-shopping-cart fa-fw"></i> Cancel
+                </button>
+            </div>
+            
+        </div>
+       
+        <div class="card status-card">
+            <h1>Order Status</h1>
+            
+            <div class="product-section">
+                <label class="labelProd">Product A</label>
+                <div class="status-grid">
+                    <label class="status-label">Finished:</label>
+                    <span id="product1finished" class="status-value">0</span>
+                    <label class="status-label">Under Process:</label>
+                    <span id="Prod1UnderProcessOrder" class="status-value">0</span>
+                    <label class="status-label">Success:</label>
+                    <span class="status-value">100%</span>
+                </div>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div class="product-section">
+                <label class="labelProd">Product B</label>
+                <div class="status-grid">
+                    <label class="status-label">Finished:</label>
+                    <span id="product2finished" class="status-value">0</span>
+                    <label class="status-label" style="margin-right: 10px;">Under Process:</label>
+                    <span id="Prod2UnderProcessOrder" class="status-value">0</span>
+                    <label class="status-label">Success:</label>
+                    <span class="status-value">100%</span>
+                </div>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div class="product-section">
+                <label class="labelProd">Product C</label>
+                <div class="status-grid">
+                    <label class="status-label">Finished:</label>
+                    <span id="product3finished" class="status-value">0</span>
+                    <label class="status-label">Under Process:</label>
+                    <span id="Prod3UnderProcessOrder" class="status-value">0</span>
+                    <label class="status-label">Success:</label>
+                    <span class="status-value">100%</span>
+                </div>
+            </div>
+        </div>  
+        
+        <div class="card oee-card">
+            <h1>Product OEE</h1>
+            <label class="labelProd">Production</label>
+            
+            <div class="divider"></div>
+
+            <div class="oee-inputs">
+                <div class="oee-input-group">
+                    <label for="availabilitycal">Availability (%):</label>
+                    <div class="oee-value">(default)</div>
+                </div>
+                
+                <div class="oee-input-group">
+                    <label for="performancecal">Performance (%):</label>
+                    <div class="oee-value">(default)</div>
+                </div>
+                
+                <div class="oee-input-group">
+                    <label for="qualitycal">Quality (%):</label>
+                    <div class="oee-value">(default)</div>
+                </div>
+            </div>
+            
+            <button class="buttonoee" id="calculatewithabove">
+                <i class="fas fa-calculator fa-fw"></i> Calculate
+            </button>
+            
+            <div class="oee-result">
+                <h2>OEE Result:</h2>
+                <span id="oeeResult">0%</span>
+            </div>
+        </div>  
+    </div>
+
+    <!-- <script src="scripter1.js"></script> -->
+    <!-- <script src="../static/scripter1.js"></script> -->
+    <script src="{{ url_for('static', filename='scripter1.js') }}"></script>
+
+    <!-- <script>
+        callProductquantitytoorder();
+    </script> -->
+</body>
+</html>
