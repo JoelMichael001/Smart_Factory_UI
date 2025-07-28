@@ -52,7 +52,7 @@ document.addEventListener('wheel', function (e) {
 function placeorderforproduct() {
     const productA = document.getElementById('ProductAOrder').value || 0;
     const productB = document.getElementById('ProductBOrder').value || 0;
-    const productC = document.getElementById('ProductCOrder').value || 0;
+    // const productC = document.getElementById('ProductCOrder').value || 0;
 
     fetch('http://127.0.0.1:5500/write_to_plc', {
         method: 'POST',
@@ -60,7 +60,7 @@ function placeorderforproduct() {
         body: JSON.stringify({
             ProductA: productA,
             ProductB: productB,
-            ProductC: productC
+            // ProductC: productC
         })
     })
     .then(response => response.json())
@@ -75,7 +75,7 @@ function checkPLCStatus() {
     const placeOrder = document.getElementById('placeorderuserlogin');
     const ProductAOrderSpan = document.getElementById('ProductAOrderSpan');
     const ProductBOrderSpan = document.getElementById('ProductBOrderSpan');
-    const ProductCOrderSpan = document.getElementById('ProductCOrderSpan');
+    // const ProductCOrderSpan = document.getElementById('ProductCOrderSpan');
 
     fetch('http://127.0.0.1:5500/read_plc_coil')
         .then(response => response.json())
@@ -93,7 +93,7 @@ function checkPLCStatus() {
             // Update product order span values
             ProductAOrderSpan.innerText = "Ordered: " + data.D1span;
             ProductBOrderSpan.innerText = "Ordered: " + data.D2span;
-            ProductCOrderSpan.innerText = "Ordered: " + data.D3span;
+            // ProductCOrderSpan.innerText = "Ordered: " + data.D3span;
         })
         .catch(error => console.error('Error:', error));
 }
@@ -101,7 +101,7 @@ function checkPLCStatus() {
 function cancelOrder() {   
     const Prod1UnderProcessOrder = document.getElementById('Prod1UnderProcessOrder');
     const Prod2UnderProcessOrder = document.getElementById('Prod2UnderProcessOrder');
-    const Prod3UnderProcessOrder = document.getElementById('Prod3UnderProcessOrder');
+    // const Prod3UnderProcessOrder = document.getElementById('Prod3UnderProcessOrder');
 
     fetch('http://127.0.0.1:5500/cancel_order', {
         method: 'POST'
@@ -113,7 +113,7 @@ function cancelOrder() {
 
         if (Prod1UnderProcessOrder) Prod1UnderProcessOrder.innerText = 0;
         if (Prod2UnderProcessOrder) Prod2UnderProcessOrder.innerText = 0;
-        if (Prod3UnderProcessOrder) Prod3UnderProcessOrder.innerText = 0;
+        // if (Prod3UnderProcessOrder) Prod3UnderProcessOrder.innerText = 0;
     })
     .catch(error => console.error('Error:', error));
 }
@@ -129,27 +129,27 @@ function underprocess() {
     setInterval(() => {
         const ProductAOrderSpan = document.getElementById('ProductAOrderSpan');
         const ProductBOrderSpan = document.getElementById('ProductBOrderSpan');
-        const ProductCOrderSpan = document.getElementById('ProductCOrderSpan');
+        // const ProductCOrderSpan = document.getElementById('ProductCOrderSpan');
 
-        if (!ProductAOrderSpan || !ProductBOrderSpan || !ProductCOrderSpan) {
+        if (!ProductAOrderSpan || !ProductBOrderSpan ) { //!ProductCOrderSpan
             console.error("Error: Order span elements not found");
             return;
         }
 
         const ProductAValue = parseInt(ProductAOrderSpan.innerText.replace(/\D/g, '')) || 0;
         const ProductBValue = parseInt(ProductBOrderSpan.innerText.replace(/\D/g, '')) || 0;
-        const ProductCValue = parseInt(ProductCOrderSpan.innerText.replace(/\D/g, '')) || 0;
+        // const ProductCValue = parseInt(ProductCOrderSpan.innerText.replace(/\D/g, '')) || 0;
 
         const Product1finished = document.getElementById('product1finished');
         const Product2finished = document.getElementById('product2finished');
-        const Product3finished = document.getElementById('product3finished');
+        // const Product3finished = document.getElementById('product3finished');
 
         const Prod1UnderProcessOrder = document.getElementById('Prod1UnderProcessOrder');
         const Prod2UnderProcessOrder = document.getElementById('Prod2UnderProcessOrder');
-        const Prod3UnderProcessOrder = document.getElementById('Prod3UnderProcessOrder');
+        // const Prod3UnderProcessOrder = document.getElementById('Prod3UnderProcessOrder');
 
-        if (!Product1finished || !Product2finished || !Product3finished ||
-            !Prod1UnderProcessOrder || !Prod2UnderProcessOrder || !Prod3UnderProcessOrder) {
+        if (!Product1finished || !Product2finished ||
+            !Prod1UnderProcessOrder || !Prod2UnderProcessOrder ) { //|| !Prod3UnderProcessOrder || !Product3finished 
             console.error("Error: Under process or finished product elements not found");
             return;
         }
@@ -165,12 +165,12 @@ function underprocess() {
                 // Update "Under Process" order values
                 Prod1UnderProcessOrder.innerText = Math.max(ProductAValue - data.D10, 0);
                 Prod2UnderProcessOrder.innerText = Math.max(ProductBValue - data.D11, 0);
-                Prod3UnderProcessOrder.innerText = Math.max(ProductCValue - data.D12, 0);
+                // Prod3UnderProcessOrder.innerText = Math.max(ProductCValue - data.D12, 0);
 
                 // Update "Finished" product values
                 Product1finished.innerText = data.D10;
                 Product2finished.innerText = data.D11;
-                Product3finished.innerText = data.D12;
+                // Product3finished.innerText = data.D12;
             })
             .catch(error => console.error("Error fetching data:", error));
     }, 1000); // Fetch updates every 1 second
@@ -180,7 +180,7 @@ function productinStorage() {
     setInterval(() => {
         const Prod1Leftorder = document.getElementById('Prod1Leftorder');
         const Prod2Leftorder = document.getElementById('Prod2Leftorder');
-        const Prod3Leftorder = document.getElementById('Prod3Leftorder');
+        // const Prod3Leftorder = document.getElementById('Prod3Leftorder');
 
         if (!Prod1Leftorder || !Prod2Leftorder || !Prod3Leftorder) {
             console.error("Error: Storage elements not found");
@@ -198,7 +198,7 @@ function productinStorage() {
                 // Update storage product values
                 Prod1Leftorder.innerText = data.C1D7;
                 Prod2Leftorder.innerText = data.C4D8;
-                Prod3Leftorder.innerText = data.C6D9;
+                // Prod3Leftorder.innerText = data.C6D9;
             })
             .catch(error => console.error("Error fetching data:", error));
     }, 1000); // Update storage product values every second
@@ -943,9 +943,9 @@ window.addEventListener("DOMContentLoaded", function () {
             setInterval(() => {
                 const Prod1LeftorderInv = document.getElementById('item1Leftinventory');
                 const Prod2LeftorderInv = document.getElementById('item2Leftinventory');
-                const Prod3LeftorderInv = document.getElementById('item3Leftinventory');
+                // const Prod3LeftorderInv = document.getElementById('item3Leftinventory');
 
-                if (!Prod1LeftorderInv || !Prod2LeftorderInv || !Prod3LeftorderInv) {
+                if (!Prod1LeftorderInv || !Prod2LeftorderInv) {   //|| !Prod3LeftorderInv
                     console.error("Error: Storage elements not found");
                     return;
                 }
@@ -957,11 +957,10 @@ window.addEventListener("DOMContentLoaded", function () {
                             console.error("PLC connection failed");
                             return;
                         }
-
                         // Update storage product values
                         Prod1LeftorderInv.innerText = data.C1D7;
                         Prod2LeftorderInv.innerText = data.C4D8;
-                        Prod3LeftorderInv.innerText = data.C6D9;
+                        // Prod3LeftorderInv.innerText = data.C6D9;
                     })
                     .catch(error => console.error("Error fetching data:", error));
             }, 1000);
@@ -969,5 +968,43 @@ window.addEventListener("DOMContentLoaded", function () {
 
         // Call the function to start fetching data once the DOM is fully loaded
         window.inventoryWindow.productinStorageInv();
+    }
+});
+
+//..................................................Sensor Indicators (M81 to M90)..................................................//
+
+
+window.reportuserWindow = window.reportuserWindow || {};
+
+window.addEventListener("DOMContentLoaded", function () {
+    console.log("Pathname is:", window.location.pathname); // DEBUG
+    if (window.location.pathname.includes("controller")) {
+
+        window.reportuserWindow.updateSensorIndicators = function () {
+            setInterval(() => {
+                fetch('http://127.0.0.1:5500/plc/sensor-status', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Sensor data:", data);  // << You should see this now
+
+                        if (data.error) {
+                            console.warn("Sensor read failed or PLC disconnected");
+                            return;
+                        }
+
+                        for (let i = 1; i <= 10; i++) {
+                            const id = `sensor${i}-indicator`;
+                            const el = document.getElementById(id);
+                            if (el) {
+                                el.classList.remove('default', 'green', 'red');
+                                el.style.backgroundColor = data[`M${i + 80}`] === 1 ? 'green' : 'red';
+                            }
+                        }
+                    })
+                    .catch(error => console.error("Fetch error:", error));
+            }, 1000);
+        };
+
+        window.reportuserWindow.updateSensorIndicators();
     }
 });

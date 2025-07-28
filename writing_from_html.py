@@ -5,6 +5,9 @@ import time
 from flask import Flask, render_template, request, jsonify
 import webbrowser
 import os
+import threading
+import pandas as pd
+from datetime import datetime
 
 app = Flask(__name__, static_folder='static')
 CORS(app)
@@ -115,21 +118,21 @@ def read_plc_coil():
     if client.connect():
         m20 = client.read_coils(20, count=1).bits[0]
         m21 = client.read_coils(21, count=1).bits[0]
-        m22 = client.read_coils(22, count=1).bits[0]
+        # m22 = client.read_coils(22, count=1).bits[0]
         D1 = client.read_holding_registers(1, count=1)
         D2 = client.read_holding_registers(2, count=1)
-        D3 = client.read_holding_registers(3, count=1)
+        # D3 = client.read_holding_registers(3, count=1)
 
-        order_placed = m20 or m21 or m22  # True if any coil is active
+        order_placed = m20 or m21   # True if any coil is active
         D1span = D1.registers[0]
         D2span = D2.registers[0]
-        D3span = D3.registers[0]
+        # D3span = D3.registers[0]
 
         return jsonify({
             'orderPlaced': order_placed,
             'D1span': D1span,
             'D2span': D2span,
-            'D3span': D3span
+            # 'D3span': D3span
         })  # Send response
 
     return jsonify({'error': 'PLC connection failed'}), 500
@@ -139,25 +142,25 @@ def write_to_plc():
     data = request.json
     product_a = int(data.get('ProductA', 0))
     product_b = int(data.get('ProductB', 0))
-    product_c = int(data.get('ProductC', 0))
+    # product_c = int(data.get('ProductC', 0))
     y0 = client.read_coils(40960, count=1).bits[0]
 
     if client.connect() and y0:
         client.write_register(1, product_a)
         client.write_register(2, product_b)
-        client.write_register(3, product_c)
+        # client.write_register(3, product_c)
 
         time.sleep(3)
 
         # Read registers properly
         D1 = client.read_holding_registers(1, count=1)
         D2 = client.read_holding_registers(2, count=1)
-        D3 = client.read_holding_registers(3, count=1)
+        # D3 = client.read_holding_registers(3, count=1)
 
         # Extract values safely
         D1_value = D1.registers[0] if D1 else 0
         D2_value = D2.registers[0] if D2 else 0
-        D3_value = D3.registers[0] if D3 else 0
+        # D3_value = D3.registers[0] if D3 else 0
 
         client.write_coil(35,True)
         sleep(.5)
@@ -180,11 +183,11 @@ def write_to_plc():
             client.write_coil(4, False)
             wait_for_m_off(21)  # Wait for m21 to turn off
 
-        if D3_value > 0:
-            client.write_coil(5, True)
-            time.sleep(.5)
-            client.write_coil(5, False)
-            wait_for_m_off(22)  # Wait for m22 to turn off
+        # if D3_value > 0:
+        #     client.write_coil(5, True)
+        #     time.sleep(.5)
+        #     client.write_coil(5, False)
+        #     wait_for_m_off(22)  # Wait for m22 to turn off
         client.close()
         return jsonify({"message": "Values written to PLC and coils updated", "status": "success"})
 
@@ -220,12 +223,12 @@ def underprocess_read():
         if y0:
             D10 = client.read_holding_registers(10, count=1).registers[0]
             D11 = client.read_holding_registers(11, count=1).registers[0]
-            D12 = client.read_holding_registers(12, count=1).registers[0]
+            # D12 = client.read_holding_registers(12, count=1).registers[0]
 
             return jsonify({
                 'D10': D10,
                 'D11': D11,
-                'D12': D12
+                # 'D12': D12
             })
         else:
             return jsonify({'error': 'Y0 is off, no process running'}), 400  # Bad request if Y0 is off
@@ -239,24 +242,161 @@ def productinStorage():
     if not client.connect():  # Ensure the connection is established first
         return jsonify({'error': 'PLC connection failed'}), 500
     try:
-        y0 = client.read_coils(40960, count=1).bits[0]  # Read coil
-        if y0:
-            C1D7 = client.read_holding_registers(7,count=1).registers[0]
-            C4D8 = client.read_holding_registers(8,count=1).registers[0]
-            C6D9 = client.read_holding_registers(9,count=1).registers[0]
-            return jsonify({
-                'C1D7':C1D7,
-                'C4D8':C4D8,
-                'C6D9':C6D9
+        C1D7 = client.read_holding_registers(7, count=1).registers[0]
+        C4D8 = client.read_holding_registers(8, count=1).registers[0]
+        # C6D9 = client.read_holding_registers(9, count=1).registers[0]
+        return jsonify({
+            'C1D7': C1D7,
+            'C4D8': C4D8,
+            # 'C6D9': C6D9
+        })
+    except Exception as e:
+        return jsonify({'error': f'Error reading PLC data: {str(e)}'}), 500
 
-            })
+    
+@app.route('/plc/sensor-status', methods=['POST'])
+def sensor_status():
+    print("Sensor status API called")  # DEBUG LINE
 
-        else:
-            return jsonify({'error': 'Y0 is off, no process running'}), 400  # Bad request if Y0 is off
+    if not client.connect():
+        return jsonify({'error': 'PLC connection failed'}), 500
 
+    try:
+        coils = client.read_coils(81, count=10)
+        print("Coils read:", coils.bits)  # DEBUG LINE
+
+        if not coils or not coils.bits:
+            return jsonify({'error': 'Failed to read sensors'}), 500
+
+        return jsonify({f"M{i+81}": int(bit) for i, bit in enumerate(coils.bits[:10])})
 
     except Exception as e:
-        return jsonify({'error': f'Error reading PLC data: {str(e)}'}), 500  # Handle errors properly
+        print("Error:", str(e))  # DEBUG LINE
+        return jsonify({'error': f'Error reading sensors: {str(e)}'}), 500
+    
+
+#----------------------------------------BackUps--------------------------------------------#
+log_file = "product_log.xlsx"
+previous_C1D7 = None
+previous_C4D8 = None
+startup_checked = False
+
+
+def restore_storage_on_start():
+    global startup_checked
+    while not startup_checked:
+        try:
+            if not client.connect():
+                print("Waiting for PLC connection...")
+                time.sleep(5)
+                continue
+
+            # Read D7 and D8 regardless of Y0 status
+            C1D7 = client.read_holding_registers(7, count=1).registers[0]
+            C4D8 = client.read_holding_registers(8, count=1).registers[0]
+
+            print(f"Startup Read: D7={C1D7}, D8={C4D8}")
+
+            if C1D7 == 0 or C4D8 == 0:
+                print("Detected zero in D7 or D8. Attempting restore...")
+                try:
+                    df = pd.read_excel(log_file)
+                    last_row = df.iloc[-1]
+                    restored_C1D7 = int(last_row["Item 1"])
+                    restored_C4D8 = int(last_row["Item 2"])
+
+                    if C1D7 == 0:
+                        client.write_register(21, restored_C1D7)
+                        print(f"Wrote {restored_C1D7} to D21")
+
+                    if C4D8 == 0:
+                        client.write_register(22, restored_C4D8)
+                        print(f"Wrote {restored_C4D8} to D22")
+
+                    # Toggle M24 (coil 24)
+                    client.write_coil(24, True)
+                    print("M24 ON")
+                    time.sleep(2)
+                    client.write_coil(24, False)
+                    print("M24 OFF")
+
+                except Exception as e:
+                    print(f"Restore failed: {e}")
+            else:
+                print("D7/D8 already non-zero, skipping restore.")
+
+            startup_checked = True
+        except Exception as e:
+            print(f"Error in startup restore: {e}")
+            time.sleep(5)
+
+def monitor_and_log_products():
+    global previous_C1D7, previous_C4D8
+    has_initialized = False  # new flag
+
+    while True:
+        try:
+            if not client.connect():
+                print("PLC not connected, retrying...")
+                time.sleep(20)
+                continue
+
+            y0 = client.read_coils(40960, count=1).bits[0]
+            if not y0:
+                print("Y0 OFF — skipping log.")
+                time.sleep(20)
+                continue
+
+            C1D7 = client.read_holding_registers(7, count=1).registers[0]
+            C4D8 = client.read_holding_registers(8, count=1).registers[0]
+
+            # Skip if both are 0 — this prevents accidental log after power loss
+            if C1D7 == 0 and C4D8 == 0:
+                print("Both D7 and D8 are zero — skipping log.")
+                time.sleep(20)
+                continue
+
+            # Only proceed after we have at least one valid starting point
+            if not has_initialized:
+                previous_C1D7 = C1D7
+                previous_C4D8 = C4D8
+                has_initialized = True
+                print("Initialized logger with first valid values.")
+                continue
+
+            if C1D7 != previous_C1D7 or C4D8 != previous_C4D8:
+                now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                data = {
+                    "Item 1": [C1D7],
+                    "Time 1": [now],
+                    "Item 2": [C4D8],
+                    "Time 2": [now]
+                }
+
+                try:
+                    df_existing = pd.read_excel(log_file)
+                    df_new = pd.DataFrame(data)
+                    df_combined = pd.concat([df_existing, df_new], ignore_index=True)
+                except FileNotFoundError:
+                    df_combined = pd.DataFrame(data)
+
+                df_combined.to_excel(log_file, index=False)
+                print(f"✅ Logged: D7={C1D7}, D8={C4D8} at {now}")
+
+                previous_C1D7 = C1D7
+                previous_C4D8 = C4D8
+            else:
+                print("No change — skipped logging.")
+
+        except Exception as e:
+            print(f"Logging error: {e}")
+
+        time.sleep(20)
+
+
+# Start both threads
+threading.Thread(target=restore_storage_on_start, daemon=True).start()
+threading.Thread(target=monitor_and_log_products, daemon=True).start()
 
 
 if __name__ == '__main__':
