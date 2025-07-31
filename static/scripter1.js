@@ -54,7 +54,7 @@ function placeorderforproduct() {
     const productB = document.getElementById('ProductBOrder').value || 0;
     // const productC = document.getElementById('ProductCOrder').value || 0;
 
-    fetch('http://127.0.0.1:5500/write_to_plc', {
+    fetch('https://84e207274330.ngrok-free.app/write_to_plc', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -77,7 +77,7 @@ function checkPLCStatus() {
     const ProductBOrderSpan = document.getElementById('ProductBOrderSpan');
     // const ProductCOrderSpan = document.getElementById('ProductCOrderSpan');
 
-    fetch('http://127.0.0.1:5500/read_plc_coil')
+    fetch('https://84e207274330.ngrok-free.app/read_plc_coil')
         .then(response => response.json())
         .then(data => {
             if (data.orderPlaced) {
@@ -103,7 +103,7 @@ function cancelOrder() {
     const Prod2UnderProcessOrder = document.getElementById('Prod2UnderProcessOrder');
     // const Prod3UnderProcessOrder = document.getElementById('Prod3UnderProcessOrder');
 
-    fetch('http://127.0.0.1:5500/cancel_order', {
+    fetch('https://84e207274330.ngrok-free.app/cancel_order', {
         method: 'POST'
     })
     .then(response => response.json())
@@ -154,7 +154,7 @@ function underprocess() {
             return;
         }
 
-        fetch('http://127.0.0.1:5500/underprocess_read', { method: 'POST' })
+        fetch('https://84e207274330.ngrok-free.app/underprocess_read', { method: 'POST' })
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
@@ -187,7 +187,7 @@ function productinStorage() {
             return;
         }
 
-        fetch('http://127.0.0.1:5500/productinStorage', { method: 'POST' })
+        fetch('https://84e207274330.ngrok-free.app/productinStorage', { method: 'POST' })
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
@@ -244,7 +244,7 @@ window.onload = function () {
 function checkSystemStatus() {
     const systemStatusControl = document.getElementById('systemstatuscontrol');
 
-    fetch('http://127.0.0.1:5500/checkstatusConnect', { method: 'POST' })
+    fetch('https://84e207274330.ngrok-free.app/checkstatusConnect', { method: 'POST' })
     .then(response => response.json())
     .then(data => {
         if (data.error) {
@@ -269,7 +269,7 @@ function checkSystemStatus() {
 function checkSystemState() {
     const systemStateControl = document.getElementById('systemstatecontrol');
 
-    fetch('http://127.0.0.1:5500/checkstatusYO', { method: 'POST' })
+    fetch('https://84e207274330.ngrok-free.app/checkstatusYO', { method: 'POST' })
     .then(response => response.json())
     .then(data => {
         if (data.error) {
@@ -299,7 +299,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 function TurnOnSystem() {
-    fetch('http://127.0.0.1:5500/TurnOnSystem', { method: 'POST', })  
+    fetch('https://84e207274330.ngrok-free.app/TurnOnSystem', { method: 'POST', })  
 
     .then(response => {
         if (response.ok) {
@@ -320,7 +320,7 @@ function TurnOnSystem() {
 }
 
 function TurnOffSystem() {
-    fetch('http://127.0.0.1:5500/TurnoffSystem', { method: 'POST', })  
+    fetch('https://84e207274330.ngrok-free.app/TurnoffSystem', { method: 'POST', })  
 
     .then(response => {
         if (response.ok) {
@@ -912,7 +912,7 @@ function storedboxes(){
             AtChipFillingStation,
             ChipFillingAnimation,
             BallFillingAnimation,
-            containerAtConveyor,
+            containerAtConveyor,//------------- at conveyor
             showContainerAtEntryStation,
             activateIndicatorLights,
             startConveyorAnimation,
@@ -928,7 +928,10 @@ function storedboxes(){
             updateStatus
         });
     }
+
+
 });
+
 
 
 
@@ -950,7 +953,7 @@ window.addEventListener("DOMContentLoaded", function () {
                     return;
                 }
 
-                fetch('http://127.0.0.1:5500/productinStorage', { method: 'POST' })
+                fetch('https://84e207274330.ngrok-free.app/productinStorage', { method: 'POST' })
                     .then(response => response.json())
                     .then(data => {
                         if (data.error) {
@@ -982,7 +985,7 @@ window.addEventListener("DOMContentLoaded", function () {
 
         window.reportuserWindow.updateSensorIndicators = function () {
             setInterval(() => {
-                fetch('http://127.0.0.1:5500/plc/sensor-status', { method: 'POST' })
+                fetch('https://84e207274330.ngrok-free.app/plc/sensor-status', { method: 'POST' })
                     .then(response => response.json())
                     .then(data => {
                         console.log("Sensor data:", data);  // << You should see this now
@@ -1006,5 +1009,51 @@ window.addEventListener("DOMContentLoaded", function () {
         };
 
         window.reportuserWindow.updateSensorIndicators();
+    }
+});
+
+
+function pollPLCAndStartConveyor() {
+    setInterval(() => {
+        fetch('/check_plc_forConveyor')
+            .then(response => response.json())
+            .then(data => {
+                if (data.startConveyor) {
+                    PackagingSystem.startConveyorAnimation();
+                } else {
+                   pass
+                }
+            })
+            .catch(err => console.error("PLC check failed:", err));
+    }, 2000);
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    if (window.location.pathname === "/" || window.location.pathname.includes("digitaltwin")) {
+        // ... all your setup code ...
+        pollPLCAndStartConveyor(); // ✅ Called in the same block
+    }
+});
+
+
+function pollPLCAndAtConveyor() {
+    setInterval(() => {
+        fetch('/check_plc_atConveyor')
+            .then(response => response.json())
+            .then(data => {
+                if (data.atConveyor) {
+                    PackagingSystem.containerAtConveyor();
+                } else {
+                   pass
+                }
+            })
+            .catch(err => console.error("PLC check failed:", err));
+    }, 2000);
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    if (window.location.pathname === "/" || window.location.pathname.includes("digitaltwin")) {
+        // ... all your setup code ...
+        pollPLCAndAtConveyor(); // ✅ Called in the same block
     }
 });

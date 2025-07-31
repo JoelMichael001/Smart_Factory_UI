@@ -115,27 +115,31 @@ def TurnoffSystem():
 
 @app.route('/read_plc_coil', methods=['GET'])
 def read_plc_coil():
-    if client.connect():
+    if not client.connect():  # Try connecting first
+        return jsonify({'error': 'PLC connection failed'}), 500
+
+    try:
         m20 = client.read_coils(20, count=1).bits[0]
         m21 = client.read_coils(21, count=1).bits[0]
-        # m22 = client.read_coils(22, count=1).bits[0]
         D1 = client.read_holding_registers(1, count=1)
         D2 = client.read_holding_registers(2, count=1)
-        # D3 = client.read_holding_registers(3, count=1)
 
-        order_placed = m20 or m21   # True if any coil is active
+        order_placed = m20 or m21
         D1span = D1.registers[0]
         D2span = D2.registers[0]
-        # D3span = D3.registers[0]
 
         return jsonify({
             'orderPlaced': order_placed,
             'D1span': D1span,
-            'D2span': D2span,
-            # 'D3span': D3span
-        })  # Send response
+            'D2span': D2span
+        })
 
-    return jsonify({'error': 'PLC connection failed'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        client.close()  # Always close the connection after use
+
 
 @app.route('/write_to_plc', methods=['POST'])
 def write_to_plc():
@@ -397,6 +401,38 @@ def monitor_and_log_products():
 # Start both threads
 threading.Thread(target=restore_storage_on_start, daemon=True).start()
 threading.Thread(target=monitor_and_log_products, daemon=True).start()
+
+#----------------------------------------------------------#
+@app.route('/check_plc_forConveyor', methods=['GET'])
+def check_plc_forConveyor():
+    client.connect()
+
+    try:
+        c1 = client.read_coils(36, count=1).bits[0]
+        c2 = client.read_coils(41, count=1).bits[0]
+        c3 = client.read_coils(91, count=1).bits[0]
+        result = c1 and c2 and c3
+        return jsonify({"startConveyor": result})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        client.close()
+
+
+@app.route('/check_plc_atConveyor', methods=['GET'])
+def check_plc_atConveyor():
+    client.connect()
+
+    try:
+        c1 = client.read_coils(36, count=1).bits[0]
+        c2 = client.read_coils(41, count=1).bits[0]
+        c3 = client.read_coils(92, count=1).bits[0]
+        result = c1 and c2 and c3
+        return jsonify({"atConveyor": result})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        client.close()
 
 
 if __name__ == '__main__':

@@ -795,8 +795,8 @@
             <h3>System Control</h3>
             <label>System Status: </label><span id="systemstatuscontrol" style="margin-left: 5px; color: red;"> Offline</span>
             <label>System State: </label><span id="systemstatecontrol" style="margin-left: 10px; color: red;"> OFF</span>
-            <button onclick="PackagingSystem.hideContainer()" style="margin-top: 10px;">Start System</button>
-            <button onclick="PackagingSystem.showContainer()">Stop System</button>
+            <button onclick="PackagingSystem.startConveyorAnimation()" style="margin-top: 10px;">Start System</button>
+            <button onclick="PackagingSystem.stopConveyorAnimation()">Stop System</button>
             <button id="reset-btn">Reset</button>
             <button onclick="PackagingSystem.showContainerAtEntryStation()">Entry</button>
             <button onclick="PackagingSystem.containerAtConveyor()">AtConveyor</button>
